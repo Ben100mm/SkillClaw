@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "skill-aware-router": {
+      "command": "uv",
+      "args": ["run", "fastmcp", "run", "main.py:mcp"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY}"
+      }
+    }
+  }
+}
