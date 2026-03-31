@@ -16,6 +16,10 @@ dependencies = [
 [project.scripts]
 skill-router = "main:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+only-include = ["main.py", "scripts/"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
