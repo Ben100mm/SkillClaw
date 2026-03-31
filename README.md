@@ -1,4 +1,4 @@
-# Skill-Aware Router
+# SkillClaw
 
 A **Skills.sh Orchestration Layer** built on [FastMCP 3.0](https://gofastmcp.com). It treats every **Model + Skill** combination as a single unit of execution, automatically routing user prompts to the best-fit pair.
 
@@ -39,8 +39,8 @@ User Prompt
 
 ```bash
 # Clone the repo
-git clone https://github.com/<your-username>/skill-aware-router.git
-cd skill-aware-router
+git clone https://github.com/Ben100mm/SkillClaw.git
+cd SkillClaw
 
 # Install dependencies
 uv sync

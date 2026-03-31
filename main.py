@@ -1,5 +1,5 @@
 """
-Skill-Aware Router — A Multi-Agent Skill Orchestrator using FastMCP 3.0.
+SkillClaw — A Multi-Agent Skill Orchestrator using FastMCP 3.0.
 
 Watches skills_library/ for SKILL.md files, builds a capability map,
 and routes user prompts to the best model+skill pair.
@@ -230,9 +230,9 @@ async def execute_with_model(model: str, prompt: str, system: str) -> str:
 # ---------------------------------------------------------------------------
 
 mcp = FastMCP(
-    "Skill-Aware Router",
+    "SkillClaw",
     instructions=(
-        "A multi-agent skill orchestrator. It matches user prompts to "
+        "SkillClaw — a multi-agent skill orchestrator. It matches user prompts to"
         "specialized skills and routes execution to the best-fit model."
     ),
 )

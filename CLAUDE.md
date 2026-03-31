@@ -1,4 +1,4 @@
-# Skill-Aware Router — Agent Instructions
+# SkillClaw — Agent Instructions
 
 ## Build/Run Commands
 

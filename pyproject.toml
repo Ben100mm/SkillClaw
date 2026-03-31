@@ -1,7 +1,7 @@
 [project]
-name = "skill-aware-router"
+name = "skillclaw"
 version = "0.1.0"
-description = "A Skills.sh Orchestration Layer using FastMCP 3.0 — routes tasks to the best model+skill pair."
+description = "SkillClaw — A Skills.sh Orchestration Layer using FastMCP 3.0. Routes tasks to the best model+skill pair."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

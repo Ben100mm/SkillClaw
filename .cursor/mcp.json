@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "skill-aware-router": {
+    "skillclaw": {
       "command": "uv",
       "args": ["run", "fastmcp", "run", "main.py:mcp"],
       "env": {
