@@ -1,19 +1,19 @@
 # Skill-Aware Router — Agent Instructions
 
-## Build & Run
+## Build/Run Commands
 
 ```bash
 # Install dependencies
 uv sync
 
-# Run the MCP server (stdio transport — for Cursor / Claude Desktop)
+# Run the server
+uv run main.py
+
+# Run via FastMCP CLI (stdio transport — for Cursor / Claude Desktop)
 uv run fastmcp run main.py:mcp
 
-# Run the server on HTTP (for remote clients)
+# Run on HTTP (for remote clients)
 uv run fastmcp run main.py:mcp --transport http --port 8000
-
-# Run directly
-uv run python main.py
 ```
 
 ## Test
@@ -22,50 +22,52 @@ uv run python main.py
 uv run pytest tests/ -v
 ```
 
-## Environment Variables
+## Environment
 
-The server requires two API keys set as environment variables:
+Two API keys are **required** as environment variables:
 
-- `ANTHROPIC_API_KEY` — for Claude Sonnet execution
-- `GOOGLE_API_KEY` — for Gemini Flash (router) and Gemini Pro (research execution)
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_API_KEY` | Claude 3.5 Sonnet — executes coding/logic tasks |
+| `GOOGLE_API_KEY` | Gemini 1.5 Flash (intent router) + Gemini 1.5 Pro (research executor) |
 
-Copy `.env.example` to `.env` and fill in your keys.
+Copy `.env.example` → `.env` and fill in your keys. Never commit `.env`.
+
+## Project Strategy
+
+This project implements a **two-tier model routing architecture**:
+
+1. **Gemini 1.5 Flash as the Manager/Router** — Every incoming prompt is first analyzed by Gemini Flash. It is fast and cheap, making it ideal for intent classification. It matches the user's prompt against the `description` fields of all registered skills and selects the best one.
+
+2. **Claude 3.5 Sonnet for logic-heavy execution** — When a skill is tagged with `coding`, `logic`, `code`, `review`, `debug`, or `refactor`, the task is routed to Claude Sonnet. Sonnet excels at structured reasoning, code generation, and precise analysis.
+
+3. **Gemini 1.5 Pro for research execution** — When a skill is tagged with `research`, `data`, `analysis`, `search`, or `report`, the task is routed to Gemini Pro. Pro handles broad synthesis and multi-step research well.
+
+The selected skill's Markdown body is injected as the **system prompt** to the chosen model, giving it domain-specific instructions without any code changes.
+
+## Coding Patterns
+
+- **Always use `@mcp.tool()` decorators** for any new routing logic or server capabilities. Every user-facing function must be an MCP tool.
+- **Follow the Skills.sh YAML metadata standard** for all files in `skills_library/`. Every skill file must include:
+  ```yaml
+  ---
+  name: skill-name           # Required — unique identifier
+  description: "..."         # Required — used by the router for matching
+  tags:                      # Required — determines model selection
+    - coding
+  model_preference: claude   # Optional — claude | gemini | auto
+  ---
+  ```
+- Skills are **plain Markdown** — no Python code. The body after the frontmatter is the system prompt.
+- `SkillRegistry.reload()` is called before every execution to hot-reload new skills without restart.
+- Use Gemini Flash for the intent parser to save cost; reserve Sonnet/Pro for execution only.
 
 ## Architecture
 
-- **FastMCP 3.0** exposes three tools: `list_skills`, `execute_smart_task`, `reload_skills`.
-- **Skill Registry** (`SkillRegistry`) reads `.md` files from `skills_library/`, parses YAML frontmatter, and builds an in-memory capability map.
-- **Router** uses Gemini 1.5 Flash to match a user prompt against skill descriptions (fast + cheap).
-- **Selector** inspects skill tags to pick the execution model:
-  - Tags `coding`, `logic`, `code`, `review`, `debug`, `refactor` → Claude Sonnet
-  - Tags `research`, `data`, `analysis`, `search`, `report` → Gemini 1.5 Pro
-- **Executor** injects the skill body as a system prompt and calls the selected model.
-
-## Key Patterns
-
-- Always use `@mcp.tool` for new routing logic or exposing new capabilities.
-- Skills are plain Markdown files with YAML frontmatter — no code changes needed to add a new skill.
-- Use Gemini Flash for the intent parser to save cost; reserve Sonnet/Pro for execution.
-- The `SkillRegistry.reload()` method is called before every execution to pick up new skills without restarting.
-
-## Adding a New Skill
-
-Create a `.md` file in `skills_library/` with this structure:
-
-```markdown
----
-name: my-skill
-description: "One-line description of what this skill does."
-tags:
-  - coding
-  - review
-model_preference: claude
----
-
-# My Skill
-
-System prompt content goes here...
+```
+User Prompt → Gemini Flash (router) → Tag-based model selector → Execute with skill as system prompt
 ```
 
-Required frontmatter fields: `name`, `description`, `tags`.
-Optional: `model_preference` (`claude` | `gemini` | `auto`).
+- **FastMCP 3.0** exposes three tools: `list_skills`, `execute_smart_task`, `reload_skills`.
+- **SkillRegistry** reads `skills_library/*.md`, parses YAML frontmatter, builds a capability map.
+- **GitHub Action** (weekly) scrapes skills.sh for high-rated community skills and opens a PR.
